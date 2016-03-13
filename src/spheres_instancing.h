@@ -1,9 +1,12 @@
-/*
- * spheres_instancing.h
- *
- *  Created on: 12.03.2016
- *      Author: mwerner
- */
+/*****************************************************************************/
+/**
+ * @file spheres_instancing.h
+ * @brief Implementation of sphere rendering by instancing sphere geometry.
+ * @author Matthias Werner
+ * @sa http://11235813tdd.blogspot.de/
+ * @date 2016/03/12: Initial commit.
+ *****************************************************************************/
+
 
 #ifndef SPHERES_INSTANCING_H_
 #define SPHERES_INSTANCING_H_
@@ -17,12 +20,16 @@
 #include <string>
 #include <vector>
 
+/**
+ * Sphere rendering by instancing a sphere geometry object.
+ * Implements sphere rendering interface.
+ */
 template<unsigned TNumSpheres>
 class SpheresInstancing : Spheres<SpheresInstancing<TNumSpheres>, TNumSpheres>
 {
   public:
     SpheresInstancing()
-      :vertexBuffer(0),vertexArray(0),tboParams(0),sphere_vertices(0),sphere_indices(0)
+      :_vertexBuffer(0),_vertexArray(0),_tboParams(0),_sphere_vertices(0),_sphere_indices(0)
       {}
     const std::string getDescription() const {
       return "Spheres Rendering: Polygon-based Geometry Instancing.";
@@ -39,16 +46,14 @@ class SpheresInstancing : Spheres<SpheresInstancing<TNumSpheres>, TNumSpheres>
     void createSphereGeom( int rings=10, int sectors=10 );
   private:
     ShaderManager _shader;
-    GLuint vertexBuffer, vertexArray, tboParams;
-    std::vector<GLfloat>  sphere_vertices;
-    std::vector<GLushort> sphere_indices;
+    GLuint _vertexBuffer, _vertexArray, _tboParams;
+    std::vector<GLfloat>  _sphere_vertices;
+    std::vector<GLushort> _sphere_indices;
 };
 
 template<unsigned TNumSpheres>
 int SpheresInstancing<TNumSpheres>::loadShader()
 {
-  glEnable(GL_DEPTH_TEST);
-  glEnable(GL_DEPTH_CLAMP);
   if (_shader.isLoaded())
       _shader.unload();
 
@@ -69,6 +74,7 @@ int SpheresInstancing<TNumSpheres>::loadShader()
 template<unsigned TNumSpheres>
 int SpheresInstancing<TNumSpheres>::create(float radius_mean, float radius_var)
 {
+  glEnable(GL_DEPTH_CLAMP);
   int err = createBuffers(radius_mean, radius_var);
   err |= loadShader();
   return err;
@@ -85,7 +91,7 @@ template<unsigned TNumSpheres>
 void SpheresInstancing<TNumSpheres>::bind(const float* lightPos, const Camera& camera)
 {
   glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_BUFFER_EXT, tboParams);
+  glBindTexture(GL_TEXTURE_BUFFER_EXT, _tboParams);
   _shader.bind();
   _shader.setUniformVar("tboParams", 0);
   _shader.setUniformVar("lightPos", lightPos);
@@ -94,9 +100,9 @@ void SpheresInstancing<TNumSpheres>::bind(const float* lightPos, const Camera& c
 template<unsigned TNumSpheres>
 void SpheresInstancing<TNumSpheres>::operator()()
 {
-  glBindVertexArray(vertexArray);
+  glBindVertexArray(_vertexArray);
   glDrawElementsInstancedEXT(GL_QUADS,
-                                 sphere_indices.size(),
+                                 _sphere_indices.size(),
                                  GL_UNSIGNED_SHORT,
                                  0,
                                  TNumSpheres
@@ -134,9 +140,9 @@ int SpheresInstancing<TNumSpheres>::createBuffers(float radius_mean, float radiu
     h_data[i + 8] = radius_var * rand() / RAND_MAX + radius_mean;
   }
   ///
-  glGenBuffers(1, &vertexBuffer);
-  upload_buffer(vertexBuffer, h_data, 9 * TNumSpheres, GL_ARRAY_BUFFER, GL_STATIC_DRAW);
-  createTBO(&tboParams, vertexBuffer, GL_R32F, GL_TEXTURE0);
+  glGenBuffers(1, &_vertexBuffer);
+  upload_buffer(_vertexBuffer, h_data, 9 * TNumSpheres, GL_ARRAY_BUFFER, GL_STATIC_DRAW);
+  createTBO(&_tboParams, _vertexBuffer, GL_R32F, GL_TEXTURE0);
 
   delete[] h_data;
 
@@ -144,8 +150,8 @@ int SpheresInstancing<TNumSpheres>::createBuffers(float radius_mean, float radiu
     return 1;
   // ------------
   // create vertex array buffer
-  if(!vertexArray)
-    glGenVertexArrays(1, &vertexArray);
+  if(!_vertexArray)
+    glGenVertexArrays(1, &_vertexArray);
 
   createSphereGeom();
 
@@ -157,14 +163,14 @@ int SpheresInstancing<TNumSpheres>::createBuffers(float radius_mean, float radiu
 template<unsigned TNumSpheres>
 void SpheresInstancing<TNumSpheres>::cleanup()
 {
-  glDeleteVertexArrays(1, &vertexArray);
-  vertexArray = 0;
+  glDeleteVertexArrays(1, &_vertexArray);
+  _vertexArray = 0;
 
-  glDeleteBuffers(1, &vertexBuffer);
-  vertexBuffer = 0;
+  glDeleteBuffers(1, &_vertexBuffer);
+  _vertexBuffer = 0;
 
-  glDeleteTextures(1, &tboParams);
-  tboParams = 0;
+  glDeleteTextures(1, &_tboParams);
+  _tboParams = 0;
 }
 
 
@@ -180,8 +186,8 @@ void SpheresInstancing<TNumSpheres>::createSphereGeom( int rings, int sectors )
   float radius = 1.0f;
   GLuint sphere_IBO=0, sphere_VBO=0;
 
-  sphere_vertices.resize(rings * sectors * 6);
-  std::vector<GLfloat>::iterator v = sphere_vertices.begin();
+  _sphere_vertices.resize(rings * sectors * 6);
+  std::vector<GLfloat>::iterator v = _sphere_vertices.begin();
   for(r = 0; r < rings; r++) for(s = 0; s < sectors; s++) {
     float const y = sin( -0.5*M_PI + M_PI * r * R );
     float const x = cos(2.0*M_PI * s * S) * sin( M_PI * r * R );
@@ -197,8 +203,8 @@ void SpheresInstancing<TNumSpheres>::createSphereGeom( int rings, int sectors )
     *v++ = z;
   }
 
-  sphere_indices.resize((rings-1) * (sectors-1) * 4);
-  std::vector<GLushort>::iterator i = sphere_indices.begin();
+  _sphere_indices.resize((rings-1) * (sectors-1) * 4);
+  std::vector<GLushort>::iterator i = _sphere_indices.begin();
   for(r = 0; r < rings-1; r++) for(s = 0; s < sectors-1; s++) {
     *i++ = r * sectors + s;
     *i++ = r * sectors + (s+1);
@@ -209,13 +215,13 @@ void SpheresInstancing<TNumSpheres>::createSphereGeom( int rings, int sectors )
   glGenBuffers(1, &sphere_VBO);
   glGenBuffers(1,&sphere_IBO);
 
-  glBindVertexArray(vertexArray);
+  glBindVertexArray(_vertexArray);
   glBindBuffer(GL_ARRAY_BUFFER, sphere_VBO);
 
   glBufferData(
       GL_ARRAY_BUFFER,
-      sphere_vertices.size()*sizeof(float),
-      sphere_vertices.data(),
+      _sphere_vertices.size()*sizeof(float),
+      _sphere_vertices.data(),
       GL_STATIC_DRAW
     );
 
@@ -227,8 +233,8 @@ void SpheresInstancing<TNumSpheres>::createSphereGeom( int rings, int sectors )
 
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sphere_IBO);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-                  sphere_indices.size()*sizeof(GLushort),
-                  sphere_indices.data(),
+                  _sphere_indices.size()*sizeof(GLushort),
+                  _sphere_indices.data(),
                   GL_STATIC_DRAW);
 
   glBindVertexArray(0);

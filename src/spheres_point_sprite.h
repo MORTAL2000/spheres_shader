@@ -1,10 +1,11 @@
-/*
- * spheres_point_sprite.h
- *
- *  Created on: 12.03.2016
- *      Author: mwerner
- */
-
+/*****************************************************************************/
+/**
+ * @file spheres_point_sprite.h
+ * @brief Implementation of sphere rendering by point sprites.
+ * @author Matthias Werner
+ * @sa http://11235813tdd.blogspot.de/
+ * @date 2016/03/12: Initial commit.
+ *****************************************************************************/
 #ifndef SPHERES_POINT_SPRITE_H_
 #define SPHERES_POINT_SPRITE_H_
 
@@ -18,12 +19,16 @@
 #include <string>
 #include <vector>
 
+/**
+ * Sphere rendering by using point sprites.
+ * Implements sphere rendering interface.
+ */
 template<unsigned TNumSpheres>
 class SpheresPointSprite : Spheres<SpheresPointSprite<TNumSpheres>, TNumSpheres>
 {
   public:
   SpheresPointSprite()
-      :vertexBuffer(0),vertexArray(0)
+      :_vertexBuffer(0),_vertexArray(0)
       {}
     const std::string getDescription() const {
       return "Spheres Rendering: Point Sprites [with glitches :(].";
@@ -40,14 +45,12 @@ class SpheresPointSprite : Spheres<SpheresPointSprite<TNumSpheres>, TNumSpheres>
     void createSphereGeom( int rings=10, int sectors=10 );
   private:
     ShaderManager _shader;
-    GLuint vertexBuffer, vertexArray;
+    GLuint _vertexBuffer, _vertexArray;
 };
 
 template<unsigned TNumSpheres>
 int SpheresPointSprite<TNumSpheres>::loadShader()
 {
-  glEnable(GL_DEPTH_TEST);
-  glHint(GL_PERSPECTIVE_CORRECTION_HINT,GL_NICEST);
   if (_shader.isLoaded())
       _shader.unload();
 
@@ -68,6 +71,7 @@ int SpheresPointSprite<TNumSpheres>::loadShader()
 template<unsigned TNumSpheres>
 int SpheresPointSprite<TNumSpheres>::create(float radius_mean, float radius_var)
 {
+  glHint(GL_PERSPECTIVE_CORRECTION_HINT,GL_NICEST);
   int err = createBuffers(radius_mean, radius_var);
   err |= loadShader();
   return err;
@@ -99,7 +103,7 @@ void SpheresPointSprite<TNumSpheres>::bind(const float* lightPos, const Camera& 
 template<unsigned TNumSpheres>
 void SpheresPointSprite<TNumSpheres>::operator()()
 {
-  glBindVertexArray(vertexArray);
+  glBindVertexArray(_vertexArray);
   glDrawArrays(GL_POINTS, 0, TNumSpheres);
   glBindVertexArray(0);
 }
@@ -134,10 +138,10 @@ int SpheresPointSprite<TNumSpheres>::createBuffers(float radius_mean, float radi
     h_data[i + 8] = radius_var * rand() / RAND_MAX + radius_mean;
   }
   ///
-  if(!vertexBuffer)
-    glGenBuffers(1, &vertexBuffer);
+  if(!_vertexBuffer)
+    glGenBuffers(1, &_vertexBuffer);
 
-  upload_buffer(vertexBuffer, h_data, 12 * TNumSpheres, GL_ARRAY_BUFFER, GL_STATIC_DRAW);
+  upload_buffer(_vertexBuffer, h_data, 12 * TNumSpheres, GL_ARRAY_BUFFER, GL_STATIC_DRAW);
 
   delete[] h_data;
 
@@ -145,12 +149,12 @@ int SpheresPointSprite<TNumSpheres>::createBuffers(float radius_mean, float radi
     return 1;
   // ------------
   // create vertex array buffer
-  if(!vertexArray)
-    glGenVertexArrays(1, &vertexArray);
+  if(!_vertexArray)
+    glGenVertexArrays(1, &_vertexArray);
 
 
-  glBindVertexArray(vertexArray);
-  glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+  glBindVertexArray(_vertexArray);
+  glBindBuffer(GL_ARRAY_BUFFER, _vertexBuffer);
   glEnableVertexAttribArray(0); // pos
   glEnableVertexAttribArray(1); // color
   glEnableVertexAttribArray(2); // radius
@@ -168,11 +172,11 @@ int SpheresPointSprite<TNumSpheres>::createBuffers(float radius_mean, float radi
 template<unsigned TNumSpheres>
 void SpheresPointSprite<TNumSpheres>::cleanup()
 {
-  glDeleteVertexArrays(1, &vertexArray);
-  vertexArray = 0;
+  glDeleteVertexArrays(1, &_vertexArray);
+  _vertexArray = 0;
 
-  glDeleteBuffers(1, &vertexBuffer);
-  vertexBuffer = 0;
+  glDeleteBuffers(1, &_vertexBuffer);
+  _vertexBuffer = 0;
 }
 
 

@@ -4,6 +4,8 @@
  * @brief Some globals.
  * @author Matthias Werner
  * @sa http://11235813tdd.blogspot.de/
+ * @date 2016/03/12: Functions upload_buffer and createTBO added.
+ * Default SHADER_LOCATION defined.
  * @date 2013/04/26: Release.
  * @date 2013/04/02: Initial commit.
  *****************************************************************************/

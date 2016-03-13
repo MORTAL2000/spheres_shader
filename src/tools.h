@@ -1,9 +1,10 @@
 /*****************************************************************************/
 /**
- * @file
+ * @file tools.h
  * @brief Some functions such as time measurement and output stuff.
  * @author Matthias Werner
  * @sa http://11235813tdd.blogspot.de/
+ * @date 2016/03/12: mrand() added.
  * @date 2013/04/26: Release.
  * @date 2013/04/02: Initial commit.
  * @sa http://www.lighthouse3d.com/cg-topics/opengl-timer-query/

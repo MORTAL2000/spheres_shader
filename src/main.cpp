@@ -7,9 +7,9 @@
  *
  * @author Matthias Werner
  * @sa http://11235813tdd.blogspot.de/
+ * @date 2016/03/12: Refactoring of code.
  * @date 2013/04/26: Release.
  * @date 2013/04/02: Initial commit.
- * @date 2016/03/12:
  *****************************************************************************/
 
 #include "gl_globals.h"

@@ -3,6 +3,8 @@
  * @brief Camera class with OpenGL representation as transformation matrices.
  * @author Matthias Werner
  * @sa http://11235813tdd.blogspot.de/
+ * @date 2016/03/12: Removed overloaded applyProjection().
+ * Due to newer glm version, FOV internally is converted in radians.
  * @date 2013/04/26: Release.
  * @date 2013/04/02: Initial commit.
  * @sa http://www.morrowland.com/apron/tut_gl.php
@@ -56,9 +58,18 @@ class Camera
     const glm::mat4 mvpmatrix_glm() const;
     const glm::mat4 modelview_inverse_glm();
 
-
+    /**
+     * Computes projection and modelview-projection matrix.
+     * @param fov field-of-view in degrees (is converted in radians internally).
+     * @param w screen width
+     * @param h screen height
+     * @param zNear z-value of near plane of view frustum
+     * @param zFar z-value of far plane of view frustum
+     */
     void applyProjection(float fov, int w, int h, float zNear=0.01f, float zFar=100.f);
-    //void applyProjection(float fov, float aspect, float zNear=0.01f, float zFar=100.f);
+    /**
+     * Computes modelview and modelview-projection matrix.
+     */
     void apply();
 
   private:

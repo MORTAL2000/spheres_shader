@@ -1,10 +1,12 @@
-/*
- * sphere_billboard_geometry_shader.h
- *
- *  Created on: 12.03.2016
- *      Author: mwerner
- */
-
+/*****************************************************************************/
+/**
+ * @file sphere_billboard_geometry_shader.h
+ * @brief Implementation of sphere rendering by billboards computed in geometry
+ * shader.
+ * @author Matthias Werner
+ * @sa http://11235813tdd.blogspot.de/
+ * @date 2016/03/12: Initial commit.
+ *****************************************************************************/
 #ifndef SPHERE_BILLBOARD_GEOMETRY_SHADER_H_
 #define SPHERE_BILLBOARD_GEOMETRY_SHADER_H_
 
@@ -17,12 +19,16 @@
 #include <string>
 #include <vector>
 
+/**
+ * Sphere rendering by raycasting on billboards which are computed in the geometry shader.
+ * Implements sphere rendering interface.
+ */
 template<unsigned TNumSpheres>
 class SpheresBillboardGeometryShader : Spheres<SpheresBillboardGeometryShader<TNumSpheres>, TNumSpheres>
 {
   public:
   SpheresBillboardGeometryShader()
-      :vertexBuffer(0),vertexArray(0),indexBuffer(0)
+      :_vertexBuffer(0),_vertexArray(0),_indexBuffer(0)
       {}
     const std::string getDescription() const {
       return "Spheres Rendering: Billboard using Geometry Shader only.";
@@ -39,7 +45,7 @@ class SpheresBillboardGeometryShader : Spheres<SpheresBillboardGeometryShader<TN
     void createSphereGeom( int rings=10, int sectors=10 );
   private:
     ShaderManager _shader;
-    GLuint vertexBuffer, vertexArray, indexBuffer;
+    GLuint _vertexBuffer, _vertexArray, _indexBuffer;
 };
 
 template<unsigned TNumSpheres>
@@ -65,7 +71,6 @@ int SpheresBillboardGeometryShader<TNumSpheres>::loadShader()
 template<unsigned TNumSpheres>
 int SpheresBillboardGeometryShader<TNumSpheres>::create(float radius_mean, float radius_var)
 {
-  glEnable(GL_DEPTH_TEST);
   glHint(GL_PERSPECTIVE_CORRECTION_HINT,GL_NICEST);
   int err = createBuffers(radius_mean, radius_var);
   err |= loadShader();
@@ -90,7 +95,7 @@ void SpheresBillboardGeometryShader<TNumSpheres>::bind(const float* lightPos, co
 template<unsigned TNumSpheres>
 void SpheresBillboardGeometryShader<TNumSpheres>::operator()()
 {
-  glBindVertexArray(vertexArray);
+  glBindVertexArray(_vertexArray);
   glDrawArrays(GL_POINTS, 0, TNumSpheres);
   glBindVertexArray(0);
 }
@@ -124,10 +129,10 @@ int SpheresBillboardGeometryShader<TNumSpheres>::createBuffers(float radius_mean
     h_data[i + 8] = radius_var * rand() / RAND_MAX + radius_mean;
   }
   ///
-  if(!vertexBuffer)
-    glGenBuffers(1, &vertexBuffer);
+  if(!_vertexBuffer)
+    glGenBuffers(1, &_vertexBuffer);
 
-  upload_buffer(vertexBuffer, h_data, 12 * TNumSpheres, GL_ARRAY_BUFFER, GL_STATIC_DRAW);
+  upload_buffer(_vertexBuffer, h_data, 12 * TNumSpheres, GL_ARRAY_BUFFER, GL_STATIC_DRAW);
 
   delete[] h_data;
 
@@ -135,12 +140,12 @@ int SpheresBillboardGeometryShader<TNumSpheres>::createBuffers(float radius_mean
     return 1;
   // ------------
   // create vertex array buffer
-  if(!vertexArray)
-    glGenVertexArrays(1, &vertexArray);
+  if(!_vertexArray)
+    glGenVertexArrays(1, &_vertexArray);
 
 
-  glBindVertexArray(vertexArray);
-  glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+  glBindVertexArray(_vertexArray);
+  glBindBuffer(GL_ARRAY_BUFFER, _vertexBuffer);
   glEnableVertexAttribArray(0); // pos
   glEnableVertexAttribArray(1); // color
   glEnableVertexAttribArray(2); // radius
@@ -158,11 +163,11 @@ int SpheresBillboardGeometryShader<TNumSpheres>::createBuffers(float radius_mean
 template<unsigned TNumSpheres>
 void SpheresBillboardGeometryShader<TNumSpheres>::cleanup()
 {
-  glDeleteVertexArrays(1, &vertexArray);
-  vertexArray = 0;
+  glDeleteVertexArrays(1, &_vertexArray);
+  _vertexArray = 0;
 
-  glDeleteBuffers(1, &vertexBuffer);
-  vertexBuffer = 0;
+  glDeleteBuffers(1, &_vertexBuffer);
+  _vertexBuffer = 0;
 }
 
 

@@ -1,9 +1,11 @@
-/*
- * spheres.h
- *
- *  Created on: 12.03.2016
- *      Author: mwerner
- */
+/*****************************************************************************/
+/**
+ * @file spheres.h
+ * @brief Spheres rendering interface used for compile-time polymorphism.
+ * @author Matthias Werner
+ * @sa http://11235813tdd.blogspot.de/
+ * @date 2016/03/12: Initial commit.
+ *****************************************************************************/
 
 #ifndef SPHERES_H_
 #define SPHERES_H_
@@ -13,6 +15,11 @@
 #include <glm/glm.hpp>
 #include <string>
 
+/**
+ * Template sphere rendering class. It defines the interface for sphere
+ * rendering implementations and also wraps them with a simple test, whether renderer
+ * has been created or not.
+ */
 template<typename TSpheres, unsigned TNumSpheres>
 class Spheres
 {

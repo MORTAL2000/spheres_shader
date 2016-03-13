@@ -1,10 +1,11 @@
-/*
- * spheres_billboard_vbo.h
- *
- *  Created on: 12.03.2016
- *      Author: mwerner
- */
-
+/*****************************************************************************/
+/**
+ * @file spheres_billboard_vbo.h
+ * @brief Implementation of sphere rendering by billboards stored as VBOs.
+ * @author Matthias Werner
+ * @sa http://11235813tdd.blogspot.de/
+ * @date 2016/03/12: Initial commit.
+ *****************************************************************************/
 #ifndef SPHERES_BILLBOARD_VBO_H_
 #define SPHERES_BILLBOARD_VBO_H_
 
@@ -17,12 +18,16 @@
 #include <string>
 #include <vector>
 
+/**
+ * Sphere rendering by raycasting on billboards stored as vertex buffer objects.
+ * Implements sphere rendering interface.
+ */
 template<unsigned TNumSpheres>
 class SpheresBillboardVBO : Spheres<SpheresBillboardVBO<TNumSpheres>, TNumSpheres>
 {
   public:
   SpheresBillboardVBO()
-      :vertexBuffer(0),vertexArray(0),indexBuffer(0)
+      :_vertexBuffer(0),_vertexArray(0),_indexBuffer(0)
       {}
     const std::string getDescription() const {
       return "Spheres Rendering: Billboard and Vertex Buffer Object.";
@@ -39,14 +44,12 @@ class SpheresBillboardVBO : Spheres<SpheresBillboardVBO<TNumSpheres>, TNumSphere
     void createSphereGeom( int rings=10, int sectors=10 );
   private:
     ShaderManager _shader;
-    GLuint vertexBuffer, vertexArray, indexBuffer;
+    GLuint _vertexBuffer, _vertexArray, _indexBuffer;
 };
 
 template<unsigned TNumSpheres>
 int SpheresBillboardVBO<TNumSpheres>::loadShader()
 {
-  glEnable(GL_DEPTH_TEST);
-  glEnable(GL_DEPTH_CLAMP);
   if (_shader.isLoaded())
       _shader.unload();
 
@@ -67,7 +70,6 @@ int SpheresBillboardVBO<TNumSpheres>::loadShader()
 template<unsigned TNumSpheres>
 int SpheresBillboardVBO<TNumSpheres>::create(float radius_mean, float radius_var)
 {
-  glEnable(GL_DEPTH_TEST);
   glHint(GL_PERSPECTIVE_CORRECTION_HINT,GL_NICEST);
   int err = createBuffers(radius_mean, radius_var);
   err |= loadShader();
@@ -92,7 +94,7 @@ void SpheresBillboardVBO<TNumSpheres>::bind(const float* lightPos, const Camera&
 template<unsigned TNumSpheres>
 void SpheresBillboardVBO<TNumSpheres>::operator()()
 {
-  glBindVertexArray(vertexArray);
+  glBindVertexArray(_vertexArray);
   glDrawElements(GL_TRIANGLES,6*TNumSpheres,GL_UNSIGNED_INT,0);
   glBindVertexArray(0);
 }
@@ -166,10 +168,10 @@ int SpheresBillboardVBO<TNumSpheres>::createBuffers(float radius_mean, float rad
     i+=8;
   }
   ///
-  if(!vertexBuffer)
-    glGenBuffers(1, &vertexBuffer);
+  if(!_vertexBuffer)
+    glGenBuffers(1, &_vertexBuffer);
 
-  upload_buffer(vertexBuffer, h_data, 44 * TNumSpheres, GL_ARRAY_BUFFER, GL_STATIC_DRAW);
+  upload_buffer(_vertexBuffer, h_data, 44 * TNumSpheres, GL_ARRAY_BUFFER, GL_STATIC_DRAW);
 
   delete[] h_data;
   h_data = 0;
@@ -177,8 +179,8 @@ int SpheresBillboardVBO<TNumSpheres>::createBuffers(float radius_mean, float rad
     return 1;
   // ----------
 
-  if(!indexBuffer)
-    glGenBuffers(1,&indexBuffer);
+  if(!_indexBuffer)
+    glGenBuffers(1,&_indexBuffer);
 
   GLuint *indices = new GLuint[6*TNumSpheres];
   int j=0;
@@ -192,17 +194,17 @@ int SpheresBillboardVBO<TNumSpheres>::createBuffers(float radius_mean, float rad
     indices[k+5] = j+1;
     j+=4;
   }
-  upload_buffer(indexBuffer, indices, 6*TNumSpheres, GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW);
+  upload_buffer(_indexBuffer, indices, 6*TNumSpheres, GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW);
 
   delete[] indices;
 
   // create vertex array buffer
-  if(!vertexArray)
-    glGenVertexArrays(1, &vertexArray);
+  if(!_vertexArray)
+    glGenVertexArrays(1, &_vertexArray);
 
-  glBindVertexArray(vertexArray);
-  glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+  glBindVertexArray(_vertexArray);
+  glBindBuffer(GL_ARRAY_BUFFER, _vertexBuffer);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer);
   glEnableVertexAttribArray(0); // pos
   glEnableVertexAttribArray(1); // color
   glEnableVertexAttribArray(2); // radius
@@ -223,14 +225,14 @@ int SpheresBillboardVBO<TNumSpheres>::createBuffers(float radius_mean, float rad
 template<unsigned TNumSpheres>
 void SpheresBillboardVBO<TNumSpheres>::cleanup()
 {
-  glDeleteVertexArrays(1, &vertexArray);
-  vertexArray = 0;
+  glDeleteVertexArrays(1, &_vertexArray);
+  _vertexArray = 0;
 
-  glDeleteBuffers(1, &vertexBuffer);
-  vertexBuffer = 0;
+  glDeleteBuffers(1, &_vertexBuffer);
+  _vertexBuffer = 0;
 
-  glDeleteBuffers(1, &indexBuffer);
-  indexBuffer = 0;
+  glDeleteBuffers(1, &_indexBuffer);
+  _indexBuffer = 0;
 }
 
 

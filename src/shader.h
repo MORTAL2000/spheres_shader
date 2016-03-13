@@ -3,6 +3,7 @@
  * @brief OpenGL shader helper class.
  * @author Matthias Werner
  * @sa http://11235813tdd.blogspot.de/
+ * @date 2016/03/12: Shader location support.
  * @date 2013/04/26: Release.
  * @date 2013/04/02: Initial commit.
  * @sa http://pages.cs.wisc.edu/~shenoy/
@@ -13,7 +14,9 @@
 #include "gl_globals.h"
 #include <string>
 
-//Manages vertex and pixel shaders
+/**
+ * Manages vertex, fragment and geometry shaders.
+ */
 class ShaderManager
 {
 public:
@@ -22,7 +25,7 @@ public:
   void load(const char * vertexshader,
             const char * pixelshader,
             const char * geoshader = NULL);
-  int link();
+  int  link();
   void bind();
   void setShaderLocation(const char* );
   int  getUniformVarID(const char * name);
@@ -46,14 +49,15 @@ public:
 
 private:
   GLuint loadShader(const char * filename, int type);
-  void readEntireFile(std::string* content, const char * filename);
-  void init();
+  void   readEntireFile(std::string* content, const char * filename);
+  void   init();
+
 private:
   GLuint _programID;
   GLuint _vertexShaderID;
   GLuint _pixelShaderID;
   GLuint _geoShaderID;
-  bool  _isLoaded;
+  bool   _isLoaded;
   std::string _shader_location;
 };
 
